@@ -54,16 +54,6 @@ namespace Calc
 			this.button_9.Click += (sender, e) => this.calculator.OnDigitInput(9);
 
 			this.calculator.AccumulatorChanged += (sender, e) => this.textView_display.Text = e.Value.ToString();
-
-			#if FALSE
-			// Get our button from the layout resource,
-			// and attach an event to it
-			Button button = FindViewById<Button> (Resource.Id.myButton);
-			
-			button.Click += delegate {
-				button.Text = string.Format ("{0} clicks!", count++);
-			};
-			#endif
 		}
 	}
 }
