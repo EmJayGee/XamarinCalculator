@@ -18,6 +18,11 @@ namespace Calc
 	/// </summary>
 	public class Calculator
 	{
+		public Calculator(IMathEngine mathEngine)
+		{
+			this.mathEngine = mathEngine;
+		}
+
 		public enum Op
 		{
 			Add,
@@ -40,6 +45,29 @@ namespace Calc
 			{
 				this.op = op;
 				this.value = value;
+			}
+
+			public double Operate(IMathEngine mathEngine, double rhs) {
+				switch (this.op) {
+				case Op.Add:
+					return mathEngine.Add(this.value, rhs);
+				case Op.Subtract:
+					return mathEngine.Subtract(this.value, rhs);
+				case Op.Multiply:
+					return mathEngine.Multiply(this.value, rhs);
+				case Op.Divide:
+					return mathEngine.Divide(this.value, rhs);
+				}
+				return 0;
+			}
+
+			public bool ShouldPush(Op newOp)
+			{
+				if ((this.op == Op.Add) || (this.op == Op.Subtract)) {
+					return ((newOp == Op.Multiply) || (newOp == Op.Divide));
+				}
+
+				return false;
 			}
 
 			private Op op;
@@ -86,10 +114,13 @@ namespace Calc
 			}
 		}
 
+		public IMathEngine MathEngine { get { return this.mathEngine; } }
+
 		public void OnDigitInput(int digit)
 		{
 			if (this.resetAccumulatorOnNextDigit) {
 				this.Accumulator = 0;
+				this.postRadixFactor = 0;
 				this.resetAccumulatorOnNextDigit = false;
 			}
 
@@ -110,7 +141,7 @@ namespace Calc
 		public void OnDotInput()
 		{
 			if (this.postRadixFactor != 0) {
-				this.RaiseInputError ();
+				this.RaiseInputError();
 			} else {
 				if (this.resetAccumulatorOnNextDigit) {
 					this.Accumulator = 0;
@@ -124,20 +155,34 @@ namespace Calc
 
 		public void OnOpInput(Op op)
 		{
+			if (this.opStack.Count > 0) {
+				if (!this.opStack.Peek().ShouldPush (op)) {
+					this.Accumulator = this.opStack.Pop().Operate(this.mathEngine, this.accumulator);
+				}
+			}
+
 			this.opStack.Push (new SavedOpAndValue (op, this.accumulator));
+
+			this.postRadixFactor = 0;
 			this.resetAccumulatorOnNextDigit = true;
 		}
 
 		public void OnEqualsInput()
 		{
-			if (this.opStack.Count == 0) {
-				// Pressing 1 then 2 then 3 then equals just leaves the accumulator at 123.
-			} else if (this.opStack.Count == 1) {
-				// If there's one operation on the stack, perform it.
-			} else {
-				// If the operation stack has more than one operation this is an input error.
-				this.RaiseInputError ();
+			while (this.opStack.Count > 0) {
+				this.Accumulator = this.opStack.Pop().Operate(this.mathEngine, this.accumulator);
 			}
+
+			this.postRadixFactor = 0;
+			this.resetAccumulatorOnNextDigit = true;
+		}
+
+		public void OnClearInput()
+		{
+			this.Accumulator = 0;
+			this.postRadixFactor = 0;
+			this.opStack.Clear();
+			this.resetAccumulatorOnNextDigit = false;
 		}
 
 		protected void RaiseInputError()
@@ -152,7 +197,7 @@ namespace Calc
 		private double postRadixFactor = 0; // 0 before decimal is entered, 0.1, 0.01, etc. after.
 		private readonly Stack<SavedOpAndValue> opStack = new Stack<SavedOpAndValue>();
 		private bool resetAccumulatorOnNextDigit = false; // used to emulate calculator behavior where latest intermediate result is displayed until the next input occurs
-
+		private IMathEngine mathEngine;
 		#endregion
 	}
 }

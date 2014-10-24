@@ -93,6 +93,9 @@ namespace Calc
 			// aapt resource value: 0x7f050010
 			public const int button_add = 2131034128;
 			
+			// aapt resource value: 0x7f050011
+			public const int button_clear = 2131034129;
+			
 			// aapt resource value: 0x7f050004
 			public const int button_divide = 2131034116;
 			
