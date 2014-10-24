@@ -9,7 +9,11 @@ namespace Calc
 	/// We use double for the standard for passing values around.  It's possible that
 	/// a math engine may want to have a private opaque format but that significantly complicates
 	/// the interface and it's unclear how to necessarily map the private format back to
-	/// a value that can be represented in the calculator's display.
+	/// a value that can be represented in the calculator's display.  Further it raises questions
+	/// about input methods.
+	/// 
+	/// Instead we choose that the keypad sequences to input values and operations are
+	/// independent of the mathematics engine.
 	/// 
 	/// </summary>
 	public interface IMathEngine

@@ -25,6 +25,7 @@ namespace Calc
 
 			this.textView_display = FindViewById<TextView>(Resource.Id.display);
 
+			// Hook up the buttons to invoke the correct methods on the calculator
 			FindViewById<Button>(Resource.Id.button_0).Click += (sender, e) => this.calculator.OnDigitInput(0);
 			FindViewById<Button>(Resource.Id.button_1).Click += (sender, e) => this.calculator.OnDigitInput(1);
 			FindViewById<Button>(Resource.Id.button_2).Click += (sender, e) => this.calculator.OnDigitInput(2);
@@ -45,6 +46,7 @@ namespace Calc
 			FindViewById<Button>(Resource.Id.button_clear).Click += (o, e) => this.calculator.OnClearInput();
 			FindViewById<Button>(Resource.Id.button_dot).Click += (o, e) => this.calculator.OnDotInput();
 
+			// Change the text shown when the accumulator is changed for the calculator
 			this.calculator.AccumulatorChanged += (sender, e) => this.textView_display.Text = e.Value.ToString();
 		}
 	}

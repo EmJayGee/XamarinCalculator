@@ -47,6 +47,12 @@ namespace Calc
 				this.value = value;
 			}
 
+			/// <summary>
+			/// Uses the referenced math engine to evaluate this operation
+			/// against a value passed in.
+			/// </summary>
+			/// <param name="mathEngine">Math engine.</param>
+			/// <param name="rhs">Right hand side of the binary operation</param>
 			public double Operate(IMathEngine mathEngine, double rhs) {
 				switch (this.op) {
 				case Op.Add:
@@ -61,6 +67,11 @@ namespace Calc
 				return 0;
 			}
 
+			/// <summary>
+			/// Determines whether the operation should be pushed vs. reduced immediately.
+			/// </summary>
+			/// <returns><c>true</c>, if the new operator has higher precedence than the operator in this, <c>false</c> otherwise.</returns>
+			/// <param name="newOp">New op. to compare against</param>
 			public bool ShouldPush(Op newOp)
 			{
 				if ((this.op == Op.Add) || (this.op == Op.Subtract)) {
@@ -116,6 +127,10 @@ namespace Calc
 
 		public IMathEngine MathEngine { get { return this.mathEngine; } }
 
+		/// <summary>
+		/// Handle the user pressing a digit on the keypad
+		/// </summary>
+		/// <param name="digit">Digit.</param>
 		public void OnDigitInput(int digit)
 		{
 			if (this.resetAccumulatorOnNextDigit) {
@@ -138,6 +153,9 @@ namespace Calc
 			this.Accumulator = newAccumulator;
 		}
 
+		/// <summary>
+		/// Handle the radix point ("dot") pressed on the keypad
+		/// </summary>
 		public void OnDotInput()
 		{
 			if (this.postRadixFactor != 0) {
@@ -145,6 +163,7 @@ namespace Calc
 			} else {
 				if (this.resetAccumulatorOnNextDigit) {
 					this.Accumulator = 0;
+					this.postRadixFactor = 0;
 					this.resetAccumulatorOnNextDigit = false;
 				}
 
@@ -153,8 +172,13 @@ namespace Calc
 			}
 		}
 
+		/// <summary>
+		/// Handle an operation from the UI (add, subtract, multiply, divide)
+		/// </summary>
+		/// <param name="op">Op.</param>
 		public void OnOpInput(Op op)
 		{
+			// If there's a pushed operation, see if the precedence levels say we should reduce before pushing again
 			if (this.opStack.Count > 0) {
 				if (!this.opStack.Peek().ShouldPush (op)) {
 					this.Accumulator = this.opStack.Pop().Operate(this.mathEngine, this.accumulator);
@@ -163,20 +187,25 @@ namespace Calc
 
 			this.opStack.Push (new SavedOpAndValue (op, this.accumulator));
 
-			this.postRadixFactor = 0;
 			this.resetAccumulatorOnNextDigit = true;
 		}
 
+		/// <summary>
+		/// Handle the user pressing equals on the keypad.  Reduces pushed operations with the current
+		/// accumulator until the pushed operation stack is empty.
+		/// </summary>
 		public void OnEqualsInput()
 		{
 			while (this.opStack.Count > 0) {
 				this.Accumulator = this.opStack.Pop().Operate(this.mathEngine, this.accumulator);
 			}
 
-			this.postRadixFactor = 0;
 			this.resetAccumulatorOnNextDigit = true;
 		}
 
+		/// <summary>
+		/// Handle the user pressing the clear button on the keypad; resets the state of the calculator
+		/// </summary>
 		public void OnClearInput()
 		{
 			this.Accumulator = 0;

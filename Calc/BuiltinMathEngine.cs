@@ -1,5 +1,8 @@
 ﻿namespace Calc
 {
+	/// <summary>
+	/// Builtin math engine that does all the operations using native arithmtic.
+	/// </summary>
 	class BuiltinMathEngine : IMathEngine{
 		double IMathEngine.Add(double left, double right) {
 			return left + right;
